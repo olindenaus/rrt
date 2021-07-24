@@ -9,7 +9,7 @@ A rapidly exploring random tree (RRT) is an algorithm designed to efficiently se
  * check goal vicinity only after N iterations + at the end
  * build path to goal and highlight it
  * add obstacles and collision checking
- * 
+ * use control signals
 
  ## How to run
  1. `npm run build`
