@@ -4,6 +4,12 @@ const Graph = require('./graph');
 const drawer = require('./drawer');
 
 const MAX_VALUE = 1000;
+let randomConfig: Configuration;
+let nearestConfig: Configuration;
+let newNode: Configuration;
+let edge: Edge;
+let foundPath: boolean;
+
 const initConfig: Configuration = {
     x: 500,
     y: 500,
@@ -18,7 +24,7 @@ const goalConfig: Configuration = {
 
 function selectRandomConfig(): Configuration {
     let config: Configuration = {
-        orientation: Math.random() * 2*Math.PI,
+        orientation: Math.random() * 2 * Math.PI,
         x: Math.random() * MAX_VALUE,
         y: Math.random() * MAX_VALUE
     };
@@ -42,30 +48,27 @@ function selectNearestNode(random: Configuration, graph: IGraph): Configuration 
 
 function getNewNode(nearest: Configuration, random: Configuration, incrementalDist: number): Configuration {
     const dist = getEuclideanDistance(nearest, random);
-    if (dist < incrementalDist) return random;
+    if (dist < incrementalDist) return { ...random, parent: nearest };
     var vector = { x: random.x - nearest.x, y: random.y - nearest.y };
     var normalized = { x: vector.x / dist, y: vector.y / dist }
-    var closerNode = { x: nearest.x + normalized.x * incrementalDist, y: nearest.y + normalized.y * incrementalDist, orientation: 0 };
+    var closerNode: Configuration = { x: nearest.x + normalized.x * incrementalDist, y: nearest.y + normalized.y * incrementalDist, orientation: 0 };
+    closerNode.parent = nearest;
     return closerNode;
 }
 
 function IsInGoalVicinity(goalConf: Configuration, graph: IGraph): boolean {
     const nearest = graph.nodes.map(node => {
         return { node: node, dist: getEuclideanDistance(goalConf, node) }
-    }).find(el =>el.dist < 5);
-    if(!nearest)
+    }).find(el => el.dist < 5);
+    if (!nearest)
         return false
     return true;
 }
 
 function buildRRT(vertices: number, incrementalDist: number, initConf = initConfig, goalConf = goalConfig) {
-    let randomConfig: Configuration;
-    let nearestConfig: Configuration;
-    let newNode: Configuration;
-    let edge: Edge;
     var graph: IGraph = new Graph(initConf);
     graph.init();
-    for (var k = 1; k < vertices; k++) {
+    for (var k = 0; k < vertices; k++) {
         randomConfig = selectRandomConfig();
         nearestConfig = selectNearestNode(randomConfig, graph);
         newNode = getNewNode(nearestConfig, randomConfig, incrementalDist);
@@ -75,13 +78,18 @@ function buildRRT(vertices: number, incrementalDist: number, initConf = initConf
         if (IsInGoalVicinity(goalConf, graph)) {
             const closestNode = selectNearestNode(goalConf, graph);
             edge = graph.addEdge(closestNode, goalConf)
-            drawer.drawEdge(edge)
-            console.log('Found path!')
+            goalConf.parent = closestNode;
+            drawer.drawEdge(edge);
+            foundPath = true;
             break;
         }
     }
     drawer.highlightNode(initConf)
     drawer.highlightNode(goalConf)
+    if (foundPath) {
+        console.log("Found path")
+        drawer.highlightPathTo(goalConf)
+    }
     drawer.draw(vertices, incrementalDist);
 }
 

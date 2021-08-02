@@ -38,23 +38,29 @@ function highlightNode(node: Configuration) {
     ctx.stroke();
 }
 
-function highlightEdge(edge: Edge) {
+function highlightEdge(from: Configuration, to: Configuration) {
     ctx.beginPath()
-    ctx.lineTo(edge.from.x, edge.from.y)
-    ctx.lineTo(edge.to.x, edge.to.y)
+    ctx.lineTo(from.x, from.y)
+    ctx.lineTo(to.x, to.y)
     ctx.stroke()
 }
 
-function highlightPath(edges: Edge[]) {
+function markPathTo(node: Configuration) {
+    const parent = node.parent;
+    if(!parent)
+        return
+    highlightEdge(node, parent);
+    markPathTo(parent)
+}
+
+function highlightPathTo(node: Configuration) {
     ctx.fillStyle = 'blue'
     ctx.fill()
     ctx.lineWidth=3;
     ctx.strokStyle='#0000ff';
-    edges.forEach(edge => {
-        highlightEdge(edge)
-    });
+    markPathTo(node);
 }
 
 
 module.exports = {drawEdge: drawEdge, draw: saveImg, 
-    highlightNode: highlightNode, highlightPath: highlightPath};
+    highlightNode: highlightNode, highlightPathTo: highlightPathTo};
