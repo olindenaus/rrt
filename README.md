@@ -11,5 +11,5 @@ A rapidly exploring random tree (RRT) is an algorithm designed to efficiently se
 
  ## How to run
  1. `npm run build`
- 2. `node index.js <numberOfVertices> <incrementalDistance>`, e.g. `node index.js 100 15`
+ 2. `node index.js <numberOfVertices> <incrementalDistance> <noHighlight=false>`, e.g. `node index.js 100 15`
  3. Results are saved in `./img` folder in the code root directory.
