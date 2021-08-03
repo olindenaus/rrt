@@ -6,7 +6,6 @@ A rapidly exploring random tree (RRT) is an algorithm designed to efficiently se
 
 ## TO DO
  * grow towards uncovered area
- * check goal vicinity only after N iterations + at the end
  * add obstacles and collision checking
  * use control signals
 

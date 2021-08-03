@@ -1,5 +1,6 @@
 
 import { Configuration, Edge, IGraph } from './graph';
+const utils = require('./util');
 const Graph = require('./graph');
 const drawer = require('./drawer');
 
@@ -56,7 +57,7 @@ function getNewNode(nearest: Configuration, random: Configuration, incrementalDi
     return closerNode;
 }
 
-function IsInGoalVicinity(goalConf: Configuration, graph: IGraph): boolean {
+function isInGoalVicinity(goalConf: Configuration, graph: IGraph): boolean {
     const nearest = graph.nodes.map(node => {
         return { node: node, dist: getEuclideanDistance(goalConf, node) }
     }).find(el => el.dist < 5);
@@ -65,24 +66,31 @@ function IsInGoalVicinity(goalConf: Configuration, graph: IGraph): boolean {
     return true;
 }
 
+function connectWithGoalIfClose(goalConf: Configuration, graph: IGraph) {
+    if (isInGoalVicinity(goalConf, graph)) {
+        const closestNode = selectNearestNode(goalConf, graph);
+        let finalEdge = graph.addEdge(closestNode, goalConf);
+        goalConf.parent = closestNode;
+        drawer.drawEdge(finalEdge);
+        return true;
+    } 
+    return false;
+}
+
 function buildRRT(vertices: number, incrementalDist: number, initConf = initConfig, goalConf = goalConfig) {
-    var graph: IGraph = new Graph(initConf);
+    var graph: IGraph = new Graph(initConf, goalConf);
     graph.init();
     for (var k = 0; k < vertices; k++) {
+        if (utils.shouldCheckGoal(k + 1, vertices) && connectWithGoalIfClose(goalConf, graph)) {
+            foundPath = true;
+            break;
+        }
         randomConfig = selectRandomConfig();
         nearestConfig = selectNearestNode(randomConfig, graph);
         newNode = getNewNode(nearestConfig, randomConfig, incrementalDist);
         graph.addNode(newNode);
         edge = graph.addEdge(nearestConfig, newNode);
         drawer.drawEdge(edge)
-        if (IsInGoalVicinity(goalConf, graph)) {
-            const closestNode = selectNearestNode(goalConf, graph);
-            edge = graph.addEdge(closestNode, goalConf)
-            goalConf.parent = closestNode;
-            drawer.drawEdge(edge);
-            foundPath = true;
-            break;
-        }
     }
     drawer.highlightNode(initConf)
     drawer.highlightNode(goalConf)
